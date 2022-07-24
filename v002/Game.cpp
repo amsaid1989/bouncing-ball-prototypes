@@ -6,6 +6,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
+#include <math.h>
 
 struct Game {
   SDL_Window *window;
@@ -71,10 +72,10 @@ void handle_events(Game *g) {
 Uint64 last_time = SDL_GetTicks64();
 Uint64 current_time = 0;
 float delta = 0.0f;
-const int VELOCITY_AFTER_BOUNCE = -800000;
 
-float mass = 800.0f;
+float mass = 1200.0f;
 float velocity = 0.0f;
+float bounce_velocity = (1 / pow(mass, 0.35)) * 30000;
 float radius = 20.0f;
 SDL_FRect ball{(SCREEN_WIDTH - radius) / 2.0f, 20.0f, radius, radius};
 
@@ -91,10 +92,10 @@ void update(Game *g) {
 
   if (newh < 0) {
     newh = 0;
-    velocity = -VELOCITY_AFTER_BOUNCE / (mass * 0.5f);
+    velocity = bounce_velocity;
   } else if (newh > SCREEN_HEIGHT - radius) {
     newh = SCREEN_HEIGHT - radius;
-    velocity = VELOCITY_AFTER_BOUNCE / (mass * 0.5f);
+    velocity = -bounce_velocity;
   }
 
   ball.y = newh;
