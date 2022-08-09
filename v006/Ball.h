@@ -1,6 +1,7 @@
 #ifndef BALL_H
 #define BALL_H
 
+#include "constants.h"
 #include <SDL2/SDL.h>
 #include <math.h>
 
@@ -25,16 +26,17 @@ struct Ball {
   Direction direction{Direction::NONE};
   int counter;
 
-  static constexpr float MIN_MASS{20.0f};
-  static constexpr float MAX_MASS{1200.0f};
-  static constexpr float MIN_RADIUS{5.0f};
-  static constexpr float MAX_RADIUS{100.0f};
+  NON_INSTANCE_MEMBER constexpr float MIN_MASS{20.0f};
+  NON_INSTANCE_MEMBER constexpr float MAX_MASS{1200.0f};
+  NON_INSTANCE_MEMBER constexpr float MIN_RADIUS{10.0f};
+  NON_INSTANCE_MEMBER constexpr float MAX_RADIUS{100.0f};
 };
 
 void init_ball(Ball &b, float y, float mass, float max_velocity);
 void change_mass(Ball &b, float mass);
-void move_ball(Ball &b, float delta);
-void render_ball(SDL_Renderer *renderer, SDL_Texture *ball_texture,
-                 const Ball &b);
+void move_ball(Ball &b, float window_width, float window_height, int &score,
+               float delta);
+void render_ball(const Ball &b, float window_width, float window_height,
+                 SDL_Renderer *renderer, SDL_Texture *ball_texture);
 
 #endif // !BALL_H

@@ -38,8 +38,15 @@ void change_mass(Ball &b, float mass) {
   calculate_ball_values_from_mass(b, mass);
 }
 
-void move_ball(Ball &b, float delta) {
-  if (b.counter > 0 && b.counter % 5 == 0) {
+void move_ball(Ball &b, float window_width, float window_height, int &score,
+               float delta) {
+  /*
+   * Instead of passing the score directly, an event system would be a good
+   * idea where the ball emits an event every time it collides with the paddle
+   * so the Game object can increment the score.
+   */
+
+  if (score > 0 && score % 5 == 0) {
     change_mass(b, b.mass - 100.0f);
   }
 
@@ -57,20 +64,20 @@ void move_ball(Ball &b, float delta) {
     newY = 0;
     b.direction = Direction::POS;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;
-  } else if (newY > SCREEN_HEIGHT - b.radius * 2.0f) {
-    newY = SCREEN_HEIGHT - b.radius * 2.0f;
+  } else if (newY > window_height - b.radius * 2.0f) {
+    newY = window_height - b.radius * 2.0f;
     b.direction = Direction::NEG;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;
 
-    ++(b.counter);
+    ++score;
   }
 
   b.y = newY;
 }
 
-void render_ball(SDL_Renderer *renderer, SDL_Texture *ball_texture,
-                 const Ball &b) {
-  SDL_FRect dest{(SCREEN_WIDTH / 2.0f) - b.radius, b.y, b.radius * 2.0f,
+void render_ball(const Ball &b, float window_width, float window_height,
+                 SDL_Renderer *renderer, SDL_Texture *ball_texture) {
+  SDL_FRect dest{(window_width / 2.0f) - b.radius, b.y, b.radius * 2.0f,
                  b.radius * 2.0f};
   SDL_RenderCopyF(renderer, ball_texture, NULL, &dest);
 }

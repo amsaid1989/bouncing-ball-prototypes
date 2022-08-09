@@ -3,14 +3,21 @@
 
 #include <SDL2/SDL.h>
 
-struct Game {
+struct Window {
+  float width;
+  float height;
   SDL_Window *window;
   SDL_Renderer *renderer;
+};
+
+struct Game {
+  Window game_window;
   bool running;
   SDL_Texture *ball_texture;
   Uint32 last_time;
   Uint32 current_time;
   float delta;
+  int score;
 };
 
 bool init_game(Game &g);
