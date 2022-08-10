@@ -7,6 +7,9 @@
 void handle_paddle_events(Paddle &p, const SDL_Event &event,
                           float window_width) {
   if (event.type == SDL_MOUSEMOTION) {
+    p.prev_x = p.x;
+    p.prev_y = p.y;
+
     // The x value of the mouse motion is in pixels, but we need to make sure
     // that we get the value according to the window size in screen coordinates
     // in case the system supports high DPI
@@ -21,11 +24,9 @@ void handle_paddle_events(Paddle &p, const SDL_Event &event,
   }
 }
 
-void move_paddle(Paddle &p) {}
-
 void render_paddle(const Paddle &p, float window_width, float window_height,
                    SDL_Renderer *renderer) {
-  SDL_FRect dest{p.x, window_height - p.height - 50, p.width, p.height};
+  SDL_FRect dest{p.x, p.y, p.width, p.height};
 
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderFillRectF(renderer, &dest);

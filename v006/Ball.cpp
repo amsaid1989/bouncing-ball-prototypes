@@ -5,7 +5,7 @@
 #include <SDL2/SDL_render.h>
 #include <math.h>
 
-void calculate_ball_values_from_mass(Ball &b, float mass) {
+void calculate_ball_values_from_mass(Ball &b, float mass, float window_width) {
   if (mass < Ball::MIN_MASS) {
     mass = Ball::MIN_MASS;
   } else if (mass > Ball::MAX_MASS) {
@@ -21,25 +21,75 @@ void calculate_ball_values_from_mass(Ball &b, float mass) {
     b.radius = Ball::MAX_RADIUS;
   }
 
+  b.x = (window_width / 2) - b.radius;
+
   b.velocity = b.initial_velocity = (1 / pow(b.mass, 0.35)) * 30000;
   if (b.velocity > b.max_velocity) {
     b.velocity = b.initial_velocity = b.max_velocity;
   }
 }
 
-void init_ball(Ball &b, float y, float mass, float max_velocity) {
+void init_ball(Ball &b, float y, float mass, float max_velocity,
+               float window_width) {
   b.y = y;
   b.max_velocity = max_velocity;
 
-  calculate_ball_values_from_mass(b, mass);
+  calculate_ball_values_from_mass(b, mass, window_width);
+
+  b.prev_x = -1;
+  b.prev_y = -1;
 }
 
-void change_mass(Ball &b, float mass) {
-  calculate_ball_values_from_mass(b, mass);
+void change_mass(Ball &b, float mass, float window_width) {
+  calculate_ball_values_from_mass(b, mass, window_width);
 }
 
-void move_ball(Ball &b, float window_width, float window_height, int &score,
-               float delta) {
+bool went_through_paddle(const Ball &b, const Paddle &p) {
+  // Exit if ball is moving up
+  if (b.prev_y > b.y) {
+    return false;
+  }
+
+  float ball_prev_centre_x = b.prev_x + b.radius;
+  float ball_current_centre_x = b.x + b.radius;
+
+  float paddle_prev_left = p.prev_x;
+  float paddle_prev_right = p.prev_x + p.width;
+
+  // If the ball movement vector intersects the paddle's top, both dx and dy
+  // should be negative
+  float dx = (paddle_prev_left - ball_prev_centre_x) *
+             (paddle_prev_right - ball_current_centre_x);
+  float dy = (p.y - b.prev_y) * (p.y - b.y);
+
+  if (!(dx < 0) || !(dy < 0)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool collides_with_paddle(const Ball &b, const Paddle &p) {
+  float ball_left = b.x;
+  float ball_right = b.x + b.radius * 2.0f;
+  float ball_top = b.y;
+  float ball_bottom = b.y + b.radius * 2.0f;
+
+  float paddle_left = p.x;
+  float paddle_right = p.x + p.width;
+  float paddle_top = p.y;
+  float paddle_bottom = p.y + p.height;
+
+  if (ball_left > paddle_right || ball_right < paddle_left ||
+      ball_top > paddle_bottom || ball_bottom < paddle_top) {
+    return false;
+  }
+
+  return true;
+}
+
+void move_ball(Ball &b, const Paddle &p, float window_width,
+               float window_height, int &score, float delta) {
   /*
    * Instead of passing the score directly, an event system would be a good
    * idea where the ball emits an event every time it collides with the paddle
@@ -47,7 +97,7 @@ void move_ball(Ball &b, float window_width, float window_height, int &score,
    */
 
   if (score > 0 && score % 5 == 0) {
-    change_mass(b, b.mass - 100.0f);
+    change_mass(b, b.mass - 100.0f, window_width);
   }
 
   float acceleration = GRAVITY * b.mass;
@@ -64,20 +114,22 @@ void move_ball(Ball &b, float window_width, float window_height, int &score,
     newY = 0;
     b.direction = Direction::POS;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;
-  } else if (newY > window_height - b.radius * 2.0f) {
-    newY = window_height - b.radius * 2.0f;
+  } else if (collides_with_paddle(b, p) || went_through_paddle(b, p)) {
+    newY = p.y - b.radius * 2.0f - 1.0f;
     b.direction = Direction::NEG;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;
 
     ++score;
   }
 
+  b.prev_x = b.x;
+  b.prev_y = b.y;
+
   b.y = newY;
 }
 
 void render_ball(const Ball &b, float window_width, float window_height,
                  SDL_Renderer *renderer, SDL_Texture *ball_texture) {
-  SDL_FRect dest{(window_width / 2.0f) - b.radius, b.y, b.radius * 2.0f,
-                 b.radius * 2.0f};
+  SDL_FRect dest{b.x, b.y, b.radius * 2.0f, b.radius * 2.0f};
   SDL_RenderCopyF(renderer, ball_texture, NULL, &dest);
 }

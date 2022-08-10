@@ -12,6 +12,7 @@ struct Window {
 
 struct Game {
   Window game_window;
+  bool started;
   bool running;
   SDL_Texture *ball_texture;
   Uint32 last_time;

@@ -2,7 +2,9 @@
 #include "Ball.h"
 #include "Paddle.h"
 #include "constants.h"
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
@@ -50,17 +52,21 @@ bool init_game(Game &g) {
 
   srand(SDL_GetTicks());
 
+  g.started = false;
   g.running = true;
   g.last_time = SDL_GetTicks();
   g.current_time = 0;
   g.delta = 0.0f;
   g.score = 0;
 
-  init_ball(gBall, 20.0f, Ball::MAX_MASS, 20000.0f);
+  init_ball(gBall, 20.0f, Ball::MAX_MASS, 20000.0f, g.game_window.width);
 
   gPaddle.width = g.game_window.width * 0.5f;
   gPaddle.height = 60.0f;
   gPaddle.x = (g.game_window.width - gPaddle.width) / 2;
+  gPaddle.y = g.game_window.height - gPaddle.height - 50;
+  gPaddle.prev_x = -1;
+  gPaddle.prev_y = -1;
 
   return true;
 }
@@ -89,6 +95,11 @@ void handle_events(Game &g) {
     case SDL_QUIT:
       g.running = false;
       break;
+    case SDL_KEYDOWN:
+      if (event.key.keysym.sym == SDLK_RETURN && !g.started) {
+        g.started = true;
+      }
+      break;
     }
 
     handle_paddle_events(gPaddle, event, g.game_window.width);
@@ -99,7 +110,10 @@ void update(Game &g) {
   g.current_time = SDL_GetTicks();
   g.delta = (g.current_time - g.last_time) / 1000.0f;
 
-  move_ball(gBall, g.game_window.width, g.game_window.height, g.score, g.delta);
+  if (g.started) {
+    move_ball(gBall, gPaddle, g.game_window.width, g.game_window.height,
+              g.score, g.delta);
+  }
 
   g.last_time = g.current_time;
 }

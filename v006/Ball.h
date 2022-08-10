@@ -1,6 +1,7 @@
 #ifndef BALL_H
 #define BALL_H
 
+#include "Paddle.h"
 #include "constants.h"
 #include <SDL2/SDL.h>
 #include <math.h>
@@ -17,7 +18,10 @@ inline int get_direction_value(Direction dir) {
 }
 
 struct Ball {
+  float x;
   float y;
+  float prev_x;
+  float prev_y;
   float mass;
   float radius;
   float initial_velocity;
@@ -32,10 +36,9 @@ struct Ball {
   NON_INSTANCE_MEMBER constexpr float MAX_RADIUS{100.0f};
 };
 
-void init_ball(Ball &b, float y, float mass, float max_velocity);
-void change_mass(Ball &b, float mass);
-void move_ball(Ball &b, float window_width, float window_height, int &score,
-               float delta);
+void init_ball(Ball &b, float x, float y, float mass, float max_velocity);
+void move_ball(Ball &b, const Paddle &p, float window_width,
+               float window_height, int &score, float delta);
 void render_ball(const Ball &b, float window_width, float window_height,
                  SDL_Renderer *renderer, SDL_Texture *ball_texture);
 
