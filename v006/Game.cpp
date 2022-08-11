@@ -59,12 +59,14 @@ bool init_game(Game &g) {
   g.delta = 0.0f;
   g.score = 0;
 
-  init_ball(gBall, 20.0f, Ball::MAX_MASS, 20000.0f, g.game_window.width);
+  init_ball(gBall, 20.0f, Ball::MAX_MASS, 25000.0f, g.game_window.width);
 
   gPaddle.width = g.game_window.width * 0.5f;
   gPaddle.height = 60.0f;
   gPaddle.x = (g.game_window.width - gPaddle.width) / 2;
   gPaddle.y = g.game_window.height - gPaddle.height - 50;
+  gPaddle.mousex = (gPaddle.x / g.game_window.width) * SCREEN_WIDTH * 2;
+  gPaddle.mousey = (gPaddle.y / g.game_window.height) * SCREEN_HEIGHT;
   gPaddle.prev_x = -1;
   gPaddle.prev_y = -1;
 
@@ -102,7 +104,7 @@ void handle_events(Game &g) {
       break;
     }
 
-    handle_paddle_events(gPaddle, event, g.game_window.width);
+    handle_paddle_events(gPaddle, event);
   }
 }
 
@@ -113,6 +115,7 @@ void update(Game &g) {
   if (g.started) {
     move_ball(gBall, gPaddle, g.game_window.width, g.game_window.height,
               g.score, g.delta);
+    move_paddle(gPaddle, g.game_window.width);
   }
 
   g.last_time = g.current_time;

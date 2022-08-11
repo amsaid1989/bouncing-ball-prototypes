@@ -4,6 +4,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <math.h>
+#include <stdio.h>
 
 void calculate_ball_values_from_mass(Ball &b, float mass, float window_width) {
   if (mass < Ball::MIN_MASS) {
@@ -44,7 +45,18 @@ void change_mass(Ball &b, float mass, float window_width) {
   calculate_ball_values_from_mass(b, mass, window_width);
 }
 
-bool went_through_paddle(const Ball &b, const Paddle &p) {
+float calculate_new_position(Ball &b, float delta) {
+  float acceleration = GRAVITY * b.mass;
+
+  b.velocity += acceleration * delta;
+  if (b.velocity > b.max_velocity) {
+    b.velocity = b.max_velocity;
+  }
+
+  return b.y + (b.velocity * delta) + (0.5 * acceleration * delta * delta);
+}
+
+bool goes_through_paddle(const Ball &b, const Paddle &p, float delta) {
   // Exit if ball is moving up
   if (b.prev_y > b.y) {
     return false;
@@ -56,11 +68,20 @@ bool went_through_paddle(const Ball &b, const Paddle &p) {
   float paddle_prev_left = p.prev_x;
   float paddle_prev_right = p.prev_x + p.width;
 
+  // Copy the ball and calculate its next position. We need to calculate the
+  // next position to prevent the ball from visually going through the paddle.
+  // Otherwise, the ball will go through, and then the game would fix that by
+  // bringing it back. By calculating the next position of the ball, we prevent
+  // the ball from visually going through the paddle at all.
+  Ball copy = b;
+  copy.y = calculate_new_position(copy, delta);
+
   // If the ball movement vector intersects the paddle's top, both dx and dy
   // should be negative
   float dx = (paddle_prev_left - ball_prev_centre_x) *
              (paddle_prev_right - ball_current_centre_x);
-  float dy = (p.y - b.prev_y) * (p.y - b.y);
+  float dy =
+      (p.y - (b.y + (b.radius * 2))) * (p.y - (copy.y + (copy.radius * 2)));
 
   if (!(dx < 0) || !(dy < 0)) {
     return false;
@@ -100,21 +121,13 @@ void move_ball(Ball &b, const Paddle &p, float window_width,
     change_mass(b, b.mass - 100.0f, window_width);
   }
 
-  float acceleration = GRAVITY * b.mass;
-
-  b.velocity += acceleration * delta;
-  if (b.velocity > b.max_velocity) {
-    b.velocity = b.max_velocity;
-  }
-
-  float newY =
-      b.y + (b.velocity * delta) + (0.5 * acceleration * delta * delta);
+  float newY = calculate_new_position(b, delta);
 
   if (newY < 0) {
     newY = 0;
     b.direction = Direction::POS;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;
-  } else if (collides_with_paddle(b, p) || went_through_paddle(b, p)) {
+  } else if (goes_through_paddle(b, p, delta) || collides_with_paddle(b, p)) {
     newY = p.y - b.radius * 2.0f - 1.0f;
     b.direction = Direction::NEG;
     b.velocity = get_direction_value(b.direction) * b.initial_velocity;

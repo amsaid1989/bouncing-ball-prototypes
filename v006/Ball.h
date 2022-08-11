@@ -36,7 +36,8 @@ struct Ball {
   NON_INSTANCE_MEMBER constexpr float MAX_RADIUS{100.0f};
 };
 
-void init_ball(Ball &b, float x, float y, float mass, float max_velocity);
+void init_ball(Ball &b, float y, float mass, float max_velocity,
+               float window_width);
 void move_ball(Ball &b, const Paddle &p, float window_width,
                float window_height, int &score, float delta);
 void render_ball(const Ball &b, float window_width, float window_height,
