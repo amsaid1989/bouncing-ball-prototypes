@@ -18,7 +18,7 @@ bool init_game(Game &g) {
   }
 
   g.game_window.window = SDL_CreateWindow(
-      "Bouncy Ball", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      "Bouncing Ball", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
       SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
   if (!g.game_window.window) {
     printf("Failed to create window! SDL Error: %s\n", SDL_GetError());
