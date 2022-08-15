@@ -145,7 +145,8 @@ void move_ball(Ball &b, const Paddle &p, float window_width,
     float hitpoint = b.x + b.radius - p.x;
     b.xdir = float_to_direction((hitpoint / p.width) * 2.0f);
     if ((int)b.xdir == 1) {
-      b.xdir = (Direction)((int)b.xdir + ((rand() % 2) - 1));
+      int change = (rand() % (int)Direction::TOTAL) - 1;
+      b.xdir = (Direction)((int)b.xdir + change);
     }
 
     ++score;
