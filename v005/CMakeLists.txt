@@ -22,14 +22,12 @@ install(
 	DESTINATION
 		include
 )
+install(DIRECTORY ${SDL2_INCLUDE_DIRS} DESTINATION include)
 install(
 	FILES
-		/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0.10.0
-		/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0.2.3
-		/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0
-		/usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0
-	DESTINATION
-		lib
+		${SDL2_LIBRARIES}
+		${SDL2_IMAGE_LIBRARIES}
+	RUNTIME DESTINATION bin COMPONENT RuntimeLibraries
 )
 
 include(InstallRequiredSystemLibraries)
